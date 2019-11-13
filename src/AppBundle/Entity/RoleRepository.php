@@ -3,6 +3,9 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 
 /**
  * RoleRepository
@@ -12,4 +15,21 @@ use Doctrine\ORM\EntityRepository;
  */
 class RoleRepository extends EntityRepository
 {
+	public function getGameId ($gameId)
+    {
+		$query = $this->createQueryBuilder('p')
+		    ->where('p.game = :id')
+		    ->setParameter('id', $gameId);
+
+        return $query;
+    }
+	
+	public function getManager ()
+    {
+		$query = $this->createQueryBuilder('p')
+		    ->where('p.name = :manager')
+		    ->setParameter('manager', 'Manager');
+			
+        return $query;
+    }
 }

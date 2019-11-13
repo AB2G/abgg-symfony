@@ -1,0 +1,48 @@
+{% extends '::base.html.twig' %}
+
+{% block body -%}
+	<div class="row">
+		<div class="col-xs-4"></div>
+		<div class="col-xs-4">
+			<div class="form-group">
+				{% form_theme form 'bootstrap_3_layout.html.twig' %}
+
+					<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+					<h1>Inscription d'une équipe</h1>
+					{{ form_start(form) }}
+					{{ form_rest(form) }}
+					{{ form_widget(form.application.vars.prototype) }}
+					<hr >
+					{#
+					<input class="btn btn-default"  id="invitPlayerBtn" type="button" value="Inviter un joueur">
+					<hr />
+					#}
+					<input class="btn btn-default"  type="submit" value="Créer">
+					{{ form_end(form) }}
+
+					<script>
+					$(document).ready(function() {
+						var i=0;
+						$('form').data('authenticated', false);
+						$('#invitPlayerBtn').on('click', function(e) {
+							e.preventDefault();
+							var container = $('#team_application');
+							var newForm = container.data('prototype').replace(/__name__/g, 'Joueur'+i);
+							var newFormLi = $('' +
+								'<div id="'+ i++ +'"> ' +
+								'<hr>' +
+								'<a type="button" id="delete"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> ' +
+								' </div>').append(newForm);
+							container.append(newFormLi);
+							$('a').click(function() {
+								$(this).parent().remove();
+							});
+						});
+					});
+					</script>
+				</div>
+				<div class="col-xs-4"></div>
+			</div>
+		</div>
+	{% endblock %}

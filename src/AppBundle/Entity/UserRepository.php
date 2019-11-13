@@ -12,4 +12,22 @@ use Doctrine\ORM\EntityRepository;
  */
 class UserRepository extends EntityRepository
 {
+	public function getGameId ($gameId)
+    {
+		$query = $this->createQueryBuilder('p')
+		    ->where('p.tournament = :id')
+		    ->andWhere('p.team is null')
+		    ->setParameter('id', $gameId);
+
+        return $query;
+    }
+	
+	public function getTeamId ($teamId)
+    {
+		$query = $this->createQueryBuilder('p')
+		    ->where('p.team = :id')
+		    ->setParameter('id', $teamId);
+
+        return $query;
+    }
 }

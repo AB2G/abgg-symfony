@@ -11,7 +11,7 @@ parameters:
 framework:
     #esi:             ~
     translator:      ~
-    secret:          "%secret%"
+    secret:          '%secret%'
     router:
         resource: "%kernel.root_dir%/config/routing.yml"
         strict_requirements: ~
@@ -22,6 +22,8 @@ framework:
     templating:
         engines: ['twig']
         #assets_version: SomeVersionScheme
+        form:
+          resources: ['bootstrap_3_layout.html.twig']
     default_locale:  "%locale%"
     trusted_hosts:   ~
     trusted_proxies: ~
@@ -35,6 +37,10 @@ framework:
 twig:
     debug:            "%kernel.debug%"
     strict_variables: "%kernel.debug%"
+    globals:
+        searchUsersService: "@searchUsersService"
+        countCandidatsService: "@countCandidatsService"
+        checkRoleService: "@checkRoleService"
 
 # Assetic Configuration
 assetic:
@@ -67,10 +73,11 @@ doctrine:
 
 # Swiftmailer Configuration
 swiftmailer:
-    transport: "%mailer_transport%"
-    host:      "%mailer_host%"
-    username:  "%mailer_user%"
-    password:  "%mailer_password%"
+    #transport: accord_mandrill
+    host:      %mailer_host%
+    username:  %mailer_user%
+    password:  %mailer_password%
+    #auth_mode: %mailer_auth_mode%
     spool:     { type: memory }
 
 fos_user:
@@ -79,4 +86,20 @@ fos_user:
     user_class: AppBundle\Entity\User
     registration:
         form:
-            type: appbundle_registration
+            type: AppBundle\Form\RegistrationType
+    from_email:
+        address:        contact@esport-geek-festival.fr
+        sender_name:    BGFESport
+    service:
+        mailer: fos_user.mailer.twig_swift
+            
+sonata_block:
+    default_contexts: [cms]
+    blocks:
+        # enable the SonataAdminBundle block
+        sonata.admin.block.admin_list:
+            contexts: [admin]
+
+sonata_admin:
+    security:
+        handler: sonata.admin.security.handler.role

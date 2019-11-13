@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+	<center><img width="50%" src="{{ asset('bundles/app/images/error404.jpg') }}"/>
+	<h3>
+		La page demandee n'existe pas.
+	</h3>
+    <p>
+        Il est possible que cette page n'existe plus, ou qu'une erreur se soit glissée sur le site.
+    </p>
+    <br>
+    <p>
+        Vous allez être redirigé vers l'<a href="{{ path('homepage') }}">accueil</a>.
+    </p>
+    </center>
+{% endblock %}

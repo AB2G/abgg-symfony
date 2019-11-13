@@ -1,26 +1,171 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-<div class="row">
-  <div class="col-md-3 col-md-offset-1">
-    <ul class=" nav nav-pills nav-stacked">
-      <li><a href="{% block search_player %}{{ path('search_player', { 'needs_posts': "false" }) }}{% endblock %}">Rechercher un joueur</a></li>
-      <li><a href="{% block search_team %}{{ path('search_team', { 'needs_posts': "false" }) }}{% endblock %}">Rechercher une équipe</a></li>
-      <li><a href="#">S'inscrire au tournoi</a></li>
-      {% if (is_granted("IS_AUTHENTICATED_REMEMBERED") and app.user.captain != true) %}
-        <li><a href="{{ path('team_create' )}}">Inscrire une équipe</a></li>
-      {% endif %}
-    </ul>
-  </div>
-  <img class="col-md-6" height="400px" src="https://farm1.staticflickr.com/166/427180354_73a329f13f_o_d.png" alt="" />
-</div>
-<div class="row">
-  <h1>Informations du tournoi</h1>
-  <p class="lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ullamcorper ipsum sapien, quis tincidunt orci sagittis ut. Interdum et malesuada fames ac ante ipsum primis in faucibus. Vestibulum aliquam volutpat nunc, vel aliquam velit porttitor a. Maecenas tristique magna odio, sit amet feugiat nibh aliquet ut. Duis molestie elit eu erat iaculis sodales. Nulla ac dolor vitae leo faucibus vulputate eu a nunc. Aliquam facilisis egestas est, nec pharetra tortor sagittis a. Nunc eu nisl nec nibh tristique pulvinar sit amet a mi.
-  </p>
-  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ullamcorper ipsum sapien, quis tincidunt orci sagittis ut. Interdum et malesuada fames ac ante ipsum primis in faucibus. Vestibulum aliquam volutpat nunc, vel aliquam velit porttitor a. Maecenas tristique magna odio, sit amet feugiat nibh aliquet ut. Duis molestie elit eu erat iaculis sodales. Nulla ac dolor vitae leo faucibus vulputate eu a nunc. Aliquam facilisis egestas est, nec pharetra tortor sagittis a. Nunc eu nisl nec nibh tristique pulvinar sit amet a mi.
-  </p>
-  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ullamcorper ipsum sapien, quis tincidunt orci sagittis ut. Interdum et malesuada fames ac ante ipsum primis in faucibus. Vestibulum aliquam volutpat nunc, vel aliquam velit porttitor a. Maecenas tristique magna odio, sit amet feugiat nibh aliquet ut. Duis molestie elit eu erat iaculis sodales. Nulla ac dolor vitae leo faucibus vulputate eu a nunc. Aliquam facilisis egestas est, nec pharetra tortor sagittis a. Nunc eu nisl nec nibh tristique pulvinar sit amet a mi.
-  </p>
-</div>
+	<div class="row">
+    	<div class="col-md-2">
+		    {%if (app.request.requestUri == '/abgg-symfony/web/app_dev.php/csgo') 
+		    or (app.request.requestUri == '/abgg-symfony/web/csgo')
+		    or (app.request.requestUri == '/csgo') %}
+				<img width="100%" src="{{ asset('bundles/app/images/bancsgo.png') }}" />
+		    {%elseif (app.request.requestUri == '/abgg-symfony/web/app_dev.php/lol') 
+		    or (app.request.requestUri == '/abgg-symfony/web/lol')
+		    or (app.request.requestUri == '/lol') %}
+				<img width="100%" src="{{ asset('bundles/app/images/banlol.png') }}" />
+		    {%endif%}
+    	</div>
+    	<div class="col-md-10">
+		    <h3>Equipes Validees [tournoi 
+		    {%if (app.request.requestUri == '/abgg-symfony/web/app_dev.php/csgo') 
+		    or (app.request.requestUri == '/abgg-symfony/web/csgo')
+		    or (app.request.requestUri == '/csgo') %}
+		    	Counter Strike : Global Offensive]
+		    {%elseif (app.request.requestUri == '/abgg-symfony/web/app_dev.php/lol') 
+		    or (app.request.requestUri == '/abgg-symfony/web/lol')
+		    or (app.request.requestUri == '/lol') %}
+		    	League of Legends]
+		    {%endif%}
+		    </h3>
+    	</div>
+    </div>
+
+	<br>
+	{%set validation=false%}
+	{%set payed=false%}
+	{% for entity in entities%}
+		{%if entity.validation%}
+			{%set validation=true%}
+			{%if entity.validation.payed%}
+				{%set payed=true%}
+			{%endif%}
+		{%endif%}
+	{%endfor%}
+	
+{%if validation%}
+	<div class="row">
+    	<div class="col-md-12">
+    		{%if payed%}
+				<div class="container">
+					<div class="table-responsive">
+						<table class="table table-hover">
+							<tr>
+								<th>Nom Equipe</th>
+								<th>Capitaine</th>
+								<th>Joueur 1</th>
+								<th>Joueur 2</th>
+								<th>Joueur 3</th>
+								<th>Joueur 4</th>
+								<th>Joueur 5</th>
+								<th>Joueur 6</th>
+							</tr>
+						{%for entity in entities%}
+							{%if entity.validation%}
+								{%if entity.validation.payed%}
+									<tr>
+										<td>
+											{%if entity.image%}
+												<img height="50px" width="50px" src="{{ asset('uploads/images/'~entity.image.name) }}" />
+											{%endif%}
+											<a class="btn btn-link" href="{{ path('team_show_all', {'id':entity.id} ) }}">
+												{{entity.name}}
+											</a>
+										</td>
+										<td>
+											{%if entity.captain.image%}
+												<img height="50px" width="50px" src="{{ asset('uploads/images/'~entity.captain.image.name) }}" />
+											{%endif%}
+											<a class="btn btn-link" href="{{ path('user_show', {'id':entity.captain.id} ) }}">
+												{{entity.captain}} 
+											</a>
+											{%if entity.captain.tournament.systName == 'lol'%}
+												- {{entity.captain.role.name}}
+											{%endif%}
+										</td>
+										{%for player in entity.player%}
+											<td>
+												{%if player.user.image%}
+													<img height="50px" width="50px" src="{{ asset('uploads/images/'~player.user.image.name) }}" />
+												{%endif%}
+												<a class="btn btn-link" href="{{ path('user_show', {'id':player.user.id} ) }}">
+													{{player.user.experience.username}}
+												</a>
+												{%if entity.captain.tournament.systName == 'lol' and player.user.manager ==null%}
+													 <br> {{player.role.name}}
+												{%elseif player.user.manager !=null%}
+												 <br> Manager
+												{%endif%}
+											</td>
+										{%endfor%}
+									</tr>
+								{%endif%}
+							{%endif%}
+						{%endfor%}
+						</table>
+					</div>
+				</div>
+			{%endif%}
+			<h2>Liste d'attente</h2>
+				<div class="container">
+					<div class="table-responsive">
+						<table class="table table-hover">
+							<tr>
+								<th>Nom Equipe</th>
+								<th>Capitaine</th>
+								<th>Joueur 1</th>
+								<th>Joueur 2</th>
+								<th>Joueur 3</th>
+								<th>Joueur 4</th>
+								<th>Joueur 5</th>
+								<th>Joueur 6</th>
+							</tr>
+						{%for entity in entities%}
+							{%if entity.validation%}
+								{%if entity.validation.payed is null
+								or entity.validation.payed==0%}
+									<tr>
+										<td>
+											{%if entity.image%}
+												<img height="50px" width="50px" src="{{ asset('uploads/images/'~entity.image.name) }}" />
+											{%endif%}
+											<a class="btn btn-link" href="{{ path('team_show_all', {'id':entity.id} ) }}">
+												{{entity.name}}
+											</a>
+										</td>
+										<td>
+											{%if entity.captain.image%}
+												<img height="50px" width="50px" src="{{ asset('uploads/images/'~entity.captain.image.name) }}" />
+											{%endif%}
+											<a class="btn btn-link" href="{{ path('user_show', {'id':entity.captain.id} ) }}">
+												{{entity.captain}} 
+											</a>
+											{%if entity.captain.tournament.systName == 'lol'%}
+												- {{entity.captain.role.name}}
+											{%endif%}
+										</td>
+										{%for player in entity.player%}
+											<td>
+												{%if player.user.image%}
+													<img height="50px" width="50px" src="{{ asset('uploads/images/'~player.user.image.name) }}" />
+												{%endif%}
+												<a class="btn btn-link" href="{{ path('user_show', {'id':player.user.id} ) }}">
+													{{player.user.experience.username}}
+												</a>
+												{%if entity.captain.tournament.systName == 'lol' and player.user.manager ==null%}
+													 <br> {{player.role.name}}
+												{%elseif player.user.manager !=null%}
+												 <br> Manager
+												{%endif%}
+											</td>
+										{%endfor%}
+									</tr>
+								{%endif%}
+							{%endif%}
+						{%endfor%}
+						</table>
+					</div>
+				</div>
+		</div>
+	</div>
+{%else%}
+	<center><h2>Aucune équipe n'est actuellement valide/complète</h2></center>
+{%endif%}
 {% endblock %}

@@ -32,22 +32,38 @@ class Role
     private $name;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="syst_name", type="string", length=30, unique=true)
-     * @Assert\NotBlank
-     */
-    private $systName;
-
-    /**
      * @var game
      *
      * @ORM\ManyToOne(targetEntity="Game")
-     * @ORM\JoinColumn(nullable=false)
-     * @Assert\NotBlank
+     * @ORM\JoinColumn(nullable=true)
      */
      private $game;
 
+ 	/**
+	 * @var \Doctrine\Common\Collections\Collection|Player[]
+	 * 
+     *
+     * @ORM\OnetoMany(targetEntity="Player", mappedBy="role",cascade={"persist"})
+     **/
+    private $player;
+
+ 	/**
+	 * @var \Doctrine\Common\Collections\Collection|Application[]
+	 * 
+     *
+     * @ORM\OnetoMany(targetEntity="Application", mappedBy="role",cascade={"persist"})
+     **/
+    private $application;
+
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->player = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->application = new \Doctrine\Common\Collections\ArrayCollection();
+    }
 
     /**
      * Get id
@@ -83,29 +99,6 @@ class Role
     }
 
     /**
-     * Set systName
-     *
-     * @param string $systName
-     * @return Role
-     */
-    public function setSystName($systName)
-    {
-        $this->systName = $systName;
-
-        return $this;
-    }
-
-    /**
-     * Get systName
-     *
-     * @return string
-     */
-    public function getSystName()
-    {
-        return $this->systName;
-    }
-
-    /**
      * Set game
      *
      * @param \AppBundle\Entity\Game $game
@@ -127,6 +120,53 @@ class Role
     {
         return $this->game;
     }
+	
+ 
+    /**
+     * @param Player $player
+     */
+    public function addPlayer(\AppBundle\Entity\Player $player)
+    {
+        $player->setTeam($this);
+        $this->player[] = $player;
+		
+    }
+	
+    /**
+     * @return ArrayCollection $player
+     */
+    public function getPlayer()
+    {
+        return $this->player;
+    }
+	
+    public function removePlayer(\AppBundle\Entity\Player $player)
+    {
+        $this->player->removeElement($player);
+    }
+ 
+    /**
+     * @param Application $application
+     */
+    public function addApplication(\AppBundle\Entity\Application $application)
+    {
+        $application->setRole($this);
+        $this->application[] = $application;
+    }
+	
+    /**
+     * @return ArrayCollection $application
+     */
+    public function getApplication()
+    {
+        return $this->application;
+    }
+	
+    public function removeApplication(\AppBundle\Entity\Application $application)
+    {
+        $this->application->removeElement($application);
+    }
+ 
 
     public function __toString()
     {

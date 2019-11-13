@@ -1,40 +1,205 @@
 {% extends '::base.html.twig' %}
 
-{% block body -%}
-    <h1>User</h1>
-
-    <table class="record_properties">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ entity.id }}</td>
-            </tr>
-            <tr>
-                <th>Firstname</th>
-                <td>{{ entity.firstName }}</td>
-            </tr>
-            <tr>
-                <th>Lastname</th>
-                <td>{{ entity.lastName }}</td>
-            </tr>
-            <tr>
-                <th>Telephone</th>
-                <td>{{ entity.telephone }}</td>
-            </tr>
-        </tbody>
-    </table>
-
-        <ul class="record_actions">
-    <li>
-        <a href="{{ path('user') }}">
-            Back to the list
-        </a>
-    </li>
-    <li>
-        <a href="{{ path('user_edit', { 'id': entity.id }) }}">
-            Edit
-        </a>
-    </li>
-    <li>{{ form(delete_form) }}</li>
-</ul>
-{% endblock %}
+{% block body %}
+    <br><br><br><br><br><br><br>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-8">
+				<div class="col-md-4">
+			  		{%if user.image%}
+			  			<center>
+			  				<img width="50%" src="{{ asset('uploads/images/'~user.image.name) }}" />
+						    <br>
+			  			</center>
+			  		{%endif%}
+			  	</div>
+				<div class="col-md-1">
+			  	</div>
+				<div class="col-md-4">
+					{% if experience %}
+				  		<div class="row">
+					  		<div class="col-xs-12">
+				  				<center><h2>Pseudo : {{ experience.username }}</h2></center>
+				  			</div>
+				  		</div>
+					  	{%if user.team and user.tournament%}
+						  	<div class="row">
+						  		{%if user.role%}
+							  		<div class="col-xs-6">
+							  			<center><h4>Role : {{user.role.name}}</h4></center>
+							  		</div>
+							  		<div class="col-xs-6">
+							  			<center><h4>Nom équipe : {{user.team.name}}</h4></center>
+							  		</div>
+							  	{%else%}
+							  		<div class="col-xs-12">
+							  			<center><h4>Nom équipe : {{user.team.name}}</h4></center>
+							  		</div>
+							  	{%endif%}
+						  	</div>
+					  {%endif%}
+				  {%else%}
+					  <br>
+					  <br>
+					  	<center><h1>{{ app.user.username }}</h1></center>
+				  {%endif%}
+			  	</div>
+				<div class="col-md-3">
+			  	</div>
+			</div>
+			<div class="col-md-4">
+				{% if game %}
+				    <img width="100%" src="{{ asset('bundles/app/images/'~game.systName~'.png') }}" />
+				{%else%}
+					<br>
+				    </center>
+					<br>
+				{%endif%}
+			</div>
+		</div>
+	
+		<br><br><br>
+		<div class="row">
+			<div class="col-md-12">
+				<ul class="nav nav-tabs">
+				  <li class="active"><a data-toggle="tab" href="#perso">Infos</a></li>
+				  <li><a data-toggle="tab" href="#ingame">In Game</a></li>
+				  <li><a data-toggle="tab" href="#equipe">Equipe</a></li>
+				</ul>
+			</div>
+			<div class="tab-content">
+				<div id="perso" class="tab-pane fade in active">
+				    <table class="table table-hover">
+				        <tbody>
+				            <tr>
+				                <th>Nom</th>
+				                <td>{{ user.firstName }}</td>
+				            </tr>
+				            <tr>
+				                <th>Prénom</th>
+				                <td>{{ user.lastName }}</td>
+				            </tr>
+				            {%if (is_granted("IS_AUTHENTICATED_REMEMBERED"))%}
+					            <tr>
+					                <th>Email</th>
+					                <td>{{ user.email }}</td>
+					            </tr>
+					        {%endif%}
+				            <tr>
+				                <th>Date de Naissance</th>
+				                <td>{{ user.birth|date('Y-m-d') }}</td>
+				            </tr>
+				        </tbody>
+				    </table>
+				</div>
+		
+				<div class="tab-pane fade" id="ingame">
+					{%if game%}
+						{% if user.experience %}
+							    <table class="table table-hover">
+							        <tbody>
+							            <tr>
+							                <th>Pseudo In-Game</th>
+							                <td>{{ experience.username }}</td>
+							            <tr>
+							            {% if experience.steam %}
+								            <tr>
+								                <th>Pseudo Steam</th>
+								                <td>{{ experience.steam }}</td>
+								            </tr>
+							            {%endif%}
+							            {%if user.tournament.systName == 'lol' and user.experience.postes %}
+							            	<tr>
+							            		<th>Top Lane</th>
+							            		<td>{{user.experience.postes.top}}</td>
+							            	</tr>
+							            	<tr>
+							            		<th>Middle Lane</th>
+							            		<td>{{user.experience.postes.mid}}</td>
+							            	</tr>
+							            	<tr>
+							            		<th>Bottom Carry</th>
+							            		<td>{{user.experience.postes.bot}}</td>
+							            	</tr>
+							            	<tr>
+							            		<th>Support </th>
+							            		<td>{{user.experience.postes.sup}}</td>
+							            	</tr>
+							            	<tr>
+							            		<th>Jungle</th>
+							            		<td>{{user.experience.postes.jungle}}</td>
+							            	</tr>
+							            {%endif%}
+							            {%if user.manager%}
+							            	<tr>
+							            		<th>Poste</th>
+							            		<td>Manager</td>
+							            	</tr>
+							            {%endif%}
+							        </tbody>
+								    </table>
+								<br>
+							{%endif%}
+						{%endif%}
+				</div>
+				
+				<div class="tab-pane fade" id="equipe">
+					{%if game and experience%}
+						{% if team %}
+							    <table class="table table-hover">
+							        <tbody>
+							            <tr>
+							                <th>Nom de l'équipe</th>
+							                <td>
+							                	<a class="btn btn-link" href="{{ path('team_show_all', {'id':team.id} ) }}">
+							                		{{ team.name }}
+							                	</a>
+							                </td>
+									        <td></td>
+							            </tr>
+							            <tr>
+							            	<th>Pseudo capitaine d'équipe</th>
+							            	<td>
+							            		<a class="btn btn-link" href="{{ path('user_show', {'id':team.captain.id} ) }}">
+							            			{{team.captain.experience.username}}
+							            		</a>
+							            	</td>
+									        <td></td>
+							            </tr>
+							            {%if role%}
+								            <tr>
+								                <th>Role de {{user.experience.username}}</th>
+									            <td></td>
+								                <td>{{ role.name }}</td>
+								            </tr>
+								            {%if user.capitain==null%}
+									            <tr>
+									            	<th>Role capitaine d'équipe</th>
+									            	<td></td>
+									            	<td>{{team.captain.role}}</td>
+									            </tr>
+								            {%endif%}
+							            {%endif%}
+							            {% if user.team.player %}
+							            	{%for player in user.team.player%}
+									            <tr>
+									            	<th>Joueur</th>
+									            	<td>
+									            		<a class="btn btn-link" href="{{ path('user_show', {'id':player.user.id} ) }}">
+									            			{{player.user.experience.username}}
+									            		</a>
+									            	</td>
+							            			{%if role%}
+									            		<td>{{player.role.name}}</td>
+									            	{%endif%}
+									            </tr>
+									         {%endfor%}
+							            {%endif%}
+							        </tbody>
+							    </table>
+						{%endif%}
+					{%endif%}
+				</div>
+			</div>
+		</div>
+{%endblock%}

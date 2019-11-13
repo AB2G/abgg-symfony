@@ -1,0 +1,156 @@
+{% extends '::base.html.twig' %}
+
+{% block body -%}
+	<div class="row">
+	    <div class="col-xs-3">
+	  		{%if team.image%}
+	  			<center>
+	  				<img width="50%" src="{{ asset('uploads/images/'~team.image.name) }}" />
+	  			</center>
+	  			<br>
+	  		{%endif%}	  	
+	    </div>
+	    <div class="col-xs-3">
+			<h1>
+				{{team.name}}
+      			{%if is_granted("IS_AUTHENTICATED_REMEMBERED") 
+      			and app.user.team!=null
+      			and app.user.team.id==team.id%}
+      				<a class="btn btn-default" href="{{ path('equipe') }}">
+				        <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
+				    </a>
+      			{%endif%}
+			</h1>
+	    </div>
+	    <div class="col-xs-3">
+	      {%if is_granted("IS_AUTHENTICATED_REMEMBERED") 
+	      and (team.validation == null) 
+	      and (team.tournament==app.user.tournament)
+	      and (app.user.capitain == null)
+	      and (countCandidatsService.getPayedTeams(team.tournament.systName)<16)%}
+		      {% if (app.user.team is null) and (app.user.manager == null) %}
+		      	  {%if (team.tournament.systName=='csgo')%}
+		      		{%if (checkRoleService.checkApplication(team.id,app.user.id,'player')==false)%}
+		      			{{form(checkRoleService.recruitCSGOTeam(team.id,app.user.id,'player'))}}
+		      		{%else%}
+		      			<p>En attente d'une réponse</p>
+		      		{%endif%}
+			      	{%elseif ((checkRoleService.getRoleAvailable(team.id, app.user.id, 'player'))!=null)
+			      	and (app.user.tournament == team.tournament) 
+			      	and (app.user.experience !=null)
+			      	and (team.tournament.systName=='lol')%}
+							{% form_theme checkRoleService.getRoleAvailable(team.id, app.user.id, 'player') 'bootstrap_3_layout.html.twig' %}
+			      			{{form(checkRoleService.getRoleAvailable(team.id, app.user.id, 'player'))}}
+			      	{%elseif (app.user.tournament != team.tournament)%}
+			      	{%elseif (app.user.experience == null)%}
+			      		<div class="alert alert-warning">
+						  <strong>Warning!</strong> Finissez votre inscription afin de postuler à une équipe
+						</div>
+			      	{%else%}
+			      		<p>En attente d'une réponse</p>
+			      	{%endif%}
+		      {%elseif (app.user.manager)%}
+			      	{%if (app.user.tournament == team.tournament) and (app.user.experience !=null)%}
+			      		{%if (team.tournament.systName=='csgo')%}
+					      	{%if (checkRoleService.checkApplication(team.id,app.user.id,'player')==false)
+					      	and (app.user.team==null)%}
+				      			<a class="btn btn-default" href="{{ path('user_recruit', {'teamId':team.id,'userId':app.user.id, 'origin':'player'}) }}">Postuler</a>
+				      		{%else%}
+				      			<p>En attente d'une réponse</p>
+				      		{%endif%}
+			      		{%elseif (team.tournament.systName=='lol')%}
+					      	{%if (checkRoleService.getManagerAvailable(team.id, app.user.id)) == false%}
+						      	En attente d'une réponse
+					      	{%else%}
+					      		{{form(checkRoleService.getManagerAvailable(team.id, app.user.id))}}
+					      	{%endif%}
+					    {%endif%}
+				     {%endif%}
+		      {%else%}
+		      {%endif%}
+		  {%endif%}
+	    </div>
+	    <div class="col-xs-1">
+	    	<h2>Capitaine d'équipe
+			<a class="btn btn-link" href="{{ path('user_show', {'id':team.captain.id} ) }}">
+        		{{ team.captain.username }}
+        	</a>
+        	</h2>
+	    </div>
+	    <div class="col-xs-2">
+        	{%if team.captain.image%}
+        		<img height="100px" width="100px" src="{{ asset('uploads/images/'~team.captain.image.name) }}" />
+        	{%endif%}
+	    </div>
+	</div>
+	<br>
+	<hr>
+	<br>
+	
+		<div class="row">
+	    <div class="col-xs-1">
+	    </div>
+	    <div class="col-xs-2" >
+        	{%if team.captain.image%}
+        		<img height="100px"  width="100px" src="{{ asset('uploads/images/'~team.captain.image.name) }}" />
+        	{%endif%}
+	    </div>
+	    <div class="col-xs-8" id="player-show">
+		    <div class="col-xs-3">
+				<a class="btn btn-link" href="{{ path('user_show', {'id':team.captain.id} ) }}">
+	        		{{ team.captain.username }}
+	        	</a>
+		    </div>
+		    <div class="col-xs-4">
+		    </div>
+		    <div class="col-xs-3">
+                {%if team.captain.role%}
+                	<td>
+	                	{{ team.captain.role.name }}
+	                </td>
+                {%endif%}
+		    </div>
+		    <div class="col-xs-2">
+		    </div>
+	    </div>
+	    <div class="col-xs-1">
+	    </div>
+	</div>
+	<br>
+    	{%for player in players%}
+			<div class="row">
+			    <div class="col-xs-1">
+			    </div>
+			    <div class="col-xs-2" >
+                	{%if player.user.image%}
+                		<img height="100px" width="100px" src="{{ asset('uploads/images/'~player.user.image.name) }}" />
+                	{%endif%}
+			    </div>
+			    <div class="col-xs-8" id="player-show">
+				    <div class="col-xs-3">
+						<a class="btn btn-link" href="{{ path('user_show', {'id':player.user.id} ) }}">
+							{{player.user.username}}
+						</a>
+				    </div>
+				    <div class="col-xs-4">
+				    	{%if player.user.manager%}
+							Manager
+	                	{%endif%}
+				    </div>
+				    <div class="col-xs-3">
+		                {%if player.role%}
+							{{player.role.name}}
+						{%endif%}
+				    </div>
+				    <div class="col-xs-2">
+				    </div>
+			    </div>
+			    <div class="col-xs-1">
+			    </div>
+			</div>
+			<br>
+		{%endfor%}
+	<br>
+	
+	
+{% endblock %}

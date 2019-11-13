@@ -3,12 +3,15 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use AppBundle\Validator\Constraints as AppAssert;
 
 /**
  * Team
  *
  * @ORM\Table()
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="AppBundle\Entity\TeamRepository")
+ * @AppAssert\HasDifferentPlayers
  */
 class Team
 {
@@ -35,40 +38,47 @@ class Team
      */
     private $captain;
 
-    /**
-    * @var User
-    *
-    * @ORM\OnetoOne(targetEntity="User")
-    **/
-    private $post1;
+ 	/**
+	 * @var \Doctrine\Common\Collections\Collection|Player[]
+	 * 
+     *
+     * @ORM\OneToMany(targetEntity="Player", mappedBy="team",cascade={"persist", "remove"})
+     **/
+    private $player;
+
+ 	/**
+	 * @var \Doctrine\Common\Collections\Collection|Application[]
+	 * 
+     *
+     * @ORM\OneToMany(targetEntity="Application", mappedBy="team",cascade={"persist", "remove"})
+     **/
+    private $application;
+
 
     /**
-    * @var User
-    *
-    * @ORM\OnetoOne(targetEntity="User")
-    **/
-    private $post2;
+     * @var Validation
+     *
+     * @ORM\OneToOne(targetEntity="Validation")
+     */
+    private $validation;
+
+ 	/**
+	 * @var tournament
+	 * 
+     *
+     * @ORM\ManyToOne(targetEntity="Game", inversedBy="team")
+     **/
+    private $tournament;
 
     /**
-    * @var User
-    *
-    * @ORM\OnetoOne(targetEntity="User")
-    **/
-    private $post3;
-
-    /**
-    * @var User
-    *
-    * @ORM\OnetoOne(targetEntity="User")
-    **/
-    private $post4;
-
-    /**
-    * @var User
-    *
-    * @ORM\OnetoOne(targetEntity="User")
-    **/
-    private $post5;
+     * @var Image $image
+     *
+     * @ORM\ManyToOne(targetEntity="Image", inversedBy="image", cascade={"persist", "merge", "remove"})
+     * @ORM\JoinColumns({
+     *  @ORM\JoinColumn(name="image_id", referencedColumnName="id")
+     * })
+     */
+    private $image;
 
     /**
      * Get id
@@ -131,132 +141,17 @@ class Team
      */
     public function __construct()
     {
-        $this->members = new \Doctrine\Common\Collections\ArrayCollection();
-    }
-
-
-    /**
-     * Set post1
-     *
-     * @param \AppBundle\Entity\User $post1
-     * @return Team
-     */
-    public function setPost1(\AppBundle\Entity\User $post1 = null)
-    {
-        $this->post1 = $post1;
-
-        return $this;
-    }
-
-    /**
-     * Get post1
-     *
-     * @return \AppBundle\Entity\User
-     */
-    public function getPost1()
-    {
-        return $this->post1;
-    }
-
-    /**
-     * Set post2
-     *
-     * @param \AppBundle\Entity\User $post2
-     * @return Team
-     */
-    public function setPost2(\AppBundle\Entity\User $post2 = null)
-    {
-        $this->post2 = $post2;
-
-        return $this;
-    }
-
-    /**
-     * Get post2
-     *
-     * @return \AppBundle\Entity\User
-     */
-    public function getPost2()
-    {
-        return $this->post2;
-    }
-
-    /**
-     * Set post3
-     *
-     * @param \AppBundle\Entity\User $post3
-     * @return Team
-     */
-    public function setPost3(\AppBundle\Entity\User $post3 = null)
-    {
-        $this->post3 = $post3;
-
-        return $this;
-    }
-
-    /**
-     * Get post3
-     *
-     * @return \AppBundle\Entity\User
-     */
-    public function getPost3()
-    {
-        return $this->post3;
-    }
-
-    /**
-     * Set post4
-     *
-     * @param \AppBundle\Entity\User $post4
-     * @return Team
-     */
-    public function setPost4(\AppBundle\Entity\User $post4 = null)
-    {
-        $this->post4 = $post4;
-
-        return $this;
-    }
-
-    /**
-     * Get post4
-     *
-     * @return \AppBundle\Entity\User
-     */
-    public function getPost4()
-    {
-        return $this->post4;
-    }
-
-    /**
-     * Set post5
-     *
-     * @param \AppBundle\Entity\User $post5
-     * @return Team
-     */
-    public function setPost5(\AppBundle\Entity\User $post5 = null)
-    {
-        $this->post5 = $post5;
-
-        return $this;
-    }
-
-    /**
-     * Get post5
-     *
-     * @return \AppBundle\Entity\User
-     */
-    public function getPost5()
-    {
-        return $this->post5;
+        $this->player = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->application = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
      * Set tournament
      *
-     * @param \AppBundle\Entity\Tournament $tournament
+     * @param \AppBundle\Entity\Game $tournament
      * @return Team
      */
-    public function setTournament(\AppBundle\Entity\Tournament $tournament = null)
+    public function setTournament(\AppBundle\Entity\Game $tournament = null)
     {
         $this->tournament = $tournament;
 
@@ -266,57 +161,102 @@ class Team
     /**
      * Get tournament
      *
-     * @return \AppBundle\Entity\Tournament
+     * @return \AppBundle\Entity\Team
      */
     public function getTournament()
     {
         return $this->tournament;
     }
 
-    public function getNb()
-    {
-      $compt = 0;
-      if ($this->post1 !== null) {
-        $compt++;
-      }
-      if ($this->post2 !== null) {
-        $compt++;
-      }
-      if ($this->post3 !== null) {
-        $compt++;
-      }
-      if ($this->post4 !== null) {
-        $compt++;
-      }
-      if ($this->post5 !== null) {
-        $compt++;
-      }
-      return $compt;
-    }
-
-    public function getPosts()
-    {
-      $posts[] = null;
-      if ($this->post1 == null) {
-        $posts[] = "top";
-      }
-      if ($this->post2 == null) {
-        $posts[] = "mid";
-      }
-      if ($this->post3 == null) {
-        $posts[] = "bot";
-      }
-      if ($this->post4 == null) {
-        $posts[] = "support";
-      }
-      if ($this->post5 == null) {
-        $posts[] = "jungler";
-      }
-      return $posts;
-    }
-
     public function __toString()
     {
       return $this->name;
+    }
+	
+ 
+    /**
+     * @param Player $player
+     */
+    public function addPlayer(\AppBundle\Entity\Player $player)
+    {
+        $player->setTeam($this);
+        $this->player[] = $player;
+    }
+	
+    /**
+     * @return ArrayCollection $player
+     */
+    public function getPlayer()
+    {
+        return $this->player;
+    }
+	
+    public function removePlayer(\AppBundle\Entity\Player $player)
+    {
+        $this->player->removeElement($player);
+    }
+	
+ 
+    /**
+     * @param Application $application
+     */
+    public function addApplication(\AppBundle\Entity\Application $application)
+    {
+        $application->setTeam($this);
+        $this->application[] = $application;
+    }
+	
+    /**
+     * @return ArrayCollection $application
+     */
+    public function getApplication()
+    {
+        return $this->application;
+    }
+	
+    public function removeApplication(\AppBundle\Entity\Application $application)
+    {
+        $this->application->removeElement($application);
+    }
+	
+    /**
+     * Set validation
+     *
+     * @param Validation $validation
+     * @return Team
+     */
+    public function setValidation($validation)
+    {
+        $this->validation = $validation;
+
+        return $this;
+    }
+
+    /**
+     * Get validation
+     *
+     * @return Validation
+     */
+    public function getValidation()
+    {
+        return $this->validation;
+    }
+
+    /**
+     * @param Image $image
+     */
+    public function setImage(Image $image=null)
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
+    /**
+     * @return \AppBundle\Entity\Image $image
+     */
+    public function getImage()
+    {
+        return $this->image;
     }
 }

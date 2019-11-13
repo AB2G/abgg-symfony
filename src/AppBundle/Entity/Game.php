@@ -40,12 +40,12 @@ class Game
     private $systName;
 
     /**
-     * @var integer
+     * @var string
      *
-     * @ORM\Column(name="nb_players", type="integer")
+     * @ORM\Column(name="image", type="string", length=255)
      * @Assert\NotBlank
      */
-    private $nbPlayers;
+    private $image;
 
     /**
      * Get id
@@ -81,29 +81,6 @@ class Game
     }
 
     /**
-     * Set nbPlayers
-     *
-     * @param integer $nbPlayers
-     * @return Game
-     */
-    public function setNbPlayers($nbPlayers)
-    {
-        $this->nbPlayers = $nbPlayers;
-
-        return $this;
-    }
-
-    /**
-     * Get nbPlayers
-     *
-     * @return integer
-     */
-    public function getNbPlayers()
-    {
-        return $this->nbPlayers;
-    }
-
-    /**
      * Set systName
      *
      * @param string $systName
@@ -124,5 +101,28 @@ class Game
     public function getSystName()
     {
         return $this->systName;
+    }
+
+    /**
+     * Set image
+     *
+     * @param string $image
+     * @return Game
+     */
+    public function setImage($image)
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
+    /**
+     * Get image
+     *
+     * @return string
+     */
+    public function getImage()
+    {
+        return $this->image;
     }
 }

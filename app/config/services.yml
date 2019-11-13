@@ -7,17 +7,17 @@ services:
 #    service_name:
 #        class: AppBundle\Directory\ClassName
 #        arguments: ["@another_service_name", "plain_value", "%parameter_name%"]
-
+    
     app.form.registration:
         class: AppBundle\Form\RegistrationType
         tags:
-            - { name: form.type, alias: appbundle_registration }
+            - { name: form.type, alias: app_user_registration }
     twig.extension.text:
         class: Twig_Extensions_Extension_Text
         tags:
             - { name: twig.extension }
     app.registration_complet:
-        class: AppBundle\Utils\RegistrationConfirmListener
+        class: AppBundle\Services\RegistrationConfirmListener
         arguments: [@router]
         tags:
             - { name: kernel.event_subscriber }
@@ -29,3 +29,62 @@ services:
             -
                 name: validator.constraint_validator
                 alias: has_different_roles
+    has_different_players_validator:
+        class: AppBundle\Validator\Constraints\HasDifferentPlayersValidator
+        arguments:
+            - "@doctrine.orm.entity_manager"
+        tags:
+            -
+                name: validator.constraint_validator
+                alias: has_different_players
+
+    checkDataServices:
+        class: AppBundle\Services\CheckDataServices
+        arguments: [ @doctrine.orm.entity_manager ]
+    searchUsersService:
+        class: AppBundle\Services\SearchUsers
+        arguments: [ @doctrine.orm.entity_manager ]
+    countCandidatsService:
+        class: AppBundle\Services\CountCandidats
+        arguments: [ @doctrine.orm.entity_manager ]
+    checkRoleService:
+        class: AppBundle\Services\CheckRoleTeamApplication
+        arguments: [ @doctrine.orm.entity_manager , @service_container]
+
+    searchFormService:
+        class: AppBundle\Services\SearchFormService
+        arguments: [ @doctrine.orm.entity_manager ]
+    traductionDataSearchService:
+        class: AppBundle\Services\TraductionDataSearchService
+        arguments: [ @doctrine.orm.entity_manager ]
+
+    app.registration_email_processor:
+        class: AppBundle\Services\EmailRegisterProcessor
+        arguments: [@service_container]
+    app.registration_email_listener:
+        class: AppBundle\Services\EmailRegistrationConfirmListener
+        arguments: [@app.registration_email_processor]
+        tags:
+            - { name: kernel.event_listener, event: appBundle.services.registrationEmail, method: onRegistrationComplete }
+    invitation_services:
+        class: AppBundle\Services\invitationServices
+        arguments: [ @doctrine.orm.entity_manager, @app.registration_email_processor]
+
+
+    application_listener: 
+        class: AppBundle\Listener\ApplicationListener
+        arguments: [ @service_container ] # We use container directly in order to avoid a CircularReferenceException
+        tags:
+            - { name: doctrine.event_listener, event: postPersist }
+            - { name: doctrine.event_listener, event: postUpdate }
+            
+    admin.user:
+        class: AppBundle\Admin\UserAdmin
+        arguments: [~, AppBundle\Entity\User, ~]
+        tags:
+            - { name: sonata.admin, manager_type: orm, label: User }
+    admin.team:
+        class: AppBundle\Admin\TeamAdmin
+        arguments: [~, AppBundle\Entity\Team, ~]
+        tags:
+            - { name: sonata.admin, manager_type: orm, label: Team }

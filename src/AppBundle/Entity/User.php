@@ -7,11 +7,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use AppBundle\Validator\Constraints as AppAssert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use AppBundle\Entity\Team;
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="fos_user")
  * @UniqueEntity("experience")
+ * @ORM\Entity(repositoryClass="AppBundle\Entity\UserRepository")
  */
 class User extends BaseUser
 {
@@ -48,23 +50,104 @@ class User extends BaseUser
     private $telephone;
 
     /**
+     * @var birth
+     *
+     * @ORM\Column(name="birth", type="date")
+     * @Assert\NotBlank
+     */
+    private $birth;
+
+    /**
      * @var tournament
      *
-     * @ORM\ManyToOne(targetEntity="Game")
+     * @ORM\ManyToOne(targetEntity="Game", inversedBy="user")
      */
     private $tournament;
 
     /**
-     * @var experience
+     * @var Experience $experience
      *
-     * @ORM\OneToOne(targetEntity="Experience")
+     * @ORM\ManyToOne(targetEntity="Experience", inversedBy="experience", cascade={"persist", "merge", "remove"})
+     * @ORM\JoinColumns({
+     *  @ORM\JoinColumn(name="experience_id", referencedColumnName="id")
+     * })
      */
     private $experience;
+
+    /**
+     * @var Player $player
+     *
+     * @ORM\ManyToOne(targetEntity="Player", inversedBy="player", cascade={"persist", "merge", "remove"})
+     * @ORM\JoinColumns({
+     *  @ORM\JoinColumn(name="player_id", referencedColumnName="id")
+     * })
+     */
+    private $player;
+
+    /**
+     * @var Team $team
+     *
+     * @ORM\ManyToOne(targetEntity="Team", inversedBy="user", cascade={"persist", "merge", "remove"})
+     * @ORM\JoinColumns({
+     *  @ORM\JoinColumn(name="team_id", referencedColumnName="id")
+     * })
+     */
+    private $team;
+
+    /**
+     * @var Role $role
+     *
+     * @ORM\ManyToOne(targetEntity="Role", inversedBy="user", cascade={"persist", "merge", "remove"})
+     * @ORM\JoinColumns({
+     *  @ORM\JoinColumn(name="role_id", referencedColumnName="id")
+     * })
+     */
+    private $role;
+
+    /**
+     * @var capitain
+     *
+     * @ORM\OneToOne(targetEntity="Team", cascade={"persist"})
+     */
+    private $capitain;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(name="manager", type="boolean", nullable=true)
+     */
+    private $manager;
+
+ 	/**
+	 * @var \Doctrine\Common\Collections\Collection|Application[]
+	 * 
+     *
+     * @ORM\OneToMany(targetEntity="Application", mappedBy="user",cascade={"persist"})
+     **/
+    private $application;
+
+    /**
+     * @var Image $image
+     *
+     * @ORM\ManyToOne(targetEntity="Image", inversedBy="image", cascade={"persist", "merge"})
+     * @ORM\JoinColumns({
+     *  @ORM\JoinColumn(name="image_id", referencedColumnName="id")
+     * })
+     */
+    private $image;
+    private $oldManager;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(name="reglement", type="boolean", nullable=false)
+     */
+    private $reglement;
 
     public function __construct()
     {
         parent::__construct();
-        // your own logic
+        $this->application = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
@@ -137,12 +220,33 @@ class User extends BaseUser
     }
 
     /**
-     * Set experience
+     * Set birth
      *
-     * @param \AppBundle\Entity\Experience $experience
+     * @param date $birth
      * @return User
      */
-    public function setExperience(Experience $experience)
+    public function setBirth($birth)
+    {
+        $this->birth = $birth;
+
+        return $this;
+    }
+
+    /**
+     * Get birth
+     *
+     * @return string
+     */
+    public function getBirth()
+    {
+        return $this->birth;
+    }
+
+
+    /**
+     * @param Experience $experience
+     */
+    public function setExperience(Experience $experience=null)
     {
         $this->experience = $experience;
 
@@ -150,13 +254,30 @@ class User extends BaseUser
     }
 
     /**
-     * Get experience
-     *
-     * @return \AppBundle\Entity\Experience
+     * @return \AppBundle\Entity\Experience $experience
      */
     public function getExperience()
     {
         return $this->experience;
+    }
+
+
+    /**
+     * @param Player $player
+     */
+    public function setPlayer(Player $player=null)
+    {
+        $this->player = $player;
+
+        return $this;
+    }
+
+    /**
+     * @return \AppBundle\Entity\Player $player
+     */
+    public function getPlayer()
+    {
+        return $this->player;
     }
 
     /**
@@ -180,5 +301,161 @@ class User extends BaseUser
     public function getTournament()
     {
         return $this->tournament;
+    }
+
+    /**
+     * @param Team $team
+     */
+    public function setTeam(Team $team=null)
+    {
+        $this->team = $team;
+
+        return $this;
+    }
+
+    /**
+     * @return \AppBundle\Entity\Team $team
+     */
+    public function getTeam()
+    {
+        return $this->team;
+    }
+
+    /**
+     * @param Role $role
+     */
+    public function setRole(Role $role=null)
+    {
+        $this->role = $role;
+
+        return $this;
+    }
+
+    /**
+     * @return \AppBundle\Entity\Role $role
+     */
+    public function getRole()
+    {
+        return $this->role;
+    }
+
+    /**
+     * Set capitain
+     *
+     * @param \AppBundle\Entity\Team $capitain
+     * @return User
+     */
+    public function setCapitain(Team $capitain=null)
+    {
+        $this->capitain = $capitain;
+
+        return $this;
+    }
+
+    /**
+     * Get capitain
+     *
+     * @return \AppBundle\Entity\Team
+     */
+    public function getCapitain()
+    {
+        return $this->capitain;
+    }
+
+    /**
+     * Set manager
+     *
+     * @param boolean $manager
+     * @return User
+     */
+    public function setManager($manager)
+    {
+        $this->manager = $manager;
+
+        return $this;
+    }
+
+    /**
+     * Get manager
+     *
+     * @return boolean
+     */
+    public function getManager()
+    {
+        return $this->manager;
+    }
+ 
+    /**
+     * @param Application $application
+     */
+    public function addApplication(\AppBundle\Entity\Application $application)
+    {
+        $application->setUser($this);
+        $this->application[] = $application;
+    }
+	
+    /**
+     * @return ArrayCollection $application
+     */
+    public function getApplication()
+    {
+        return $this->application;
+    }
+	
+    public function removeApplication(\AppBundle\Entity\Application $application)
+    {
+        $this->application->removeElement($application);
+    }
+
+    /**
+     * @param Image $image
+     */
+    public function setImage(Image $image=null)
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
+    /**
+     * @return \AppBundle\Entity\Image $image
+     */
+    public function getImage()
+    {
+        return $this->image;
+    }
+
+    public function setOldManager($oldManager)
+    {
+        $this->oldManager = $oldManager;
+
+        return $this;
+    }
+    public function getOldManager()
+    {
+        return $this->oldManager;
+    }
+
+
+    /**
+     * Set reglement
+     *
+     * @param boolean $reglement
+     * @return User
+     */
+    public function setReglement($reglement)
+    {
+        $this->reglement = $reglement;
+
+        return $this;
+    }
+    /**
+     * Get manager
+     *
+     * @return boolean
+     */
+    public function getReglement()
+    {
+        return $this->reglement;
     }
 }
